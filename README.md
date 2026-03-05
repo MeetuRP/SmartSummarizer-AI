@@ -258,4 +258,4 @@ git push -u origin main
 
 ## Credits
 
-Made with love by Tushar Chauhan, Bhoomi Chavda & Meet Parmar
+Made with ❤️ by Tushar Chauhan, Bhoomi Chavda & Meet Parmar
