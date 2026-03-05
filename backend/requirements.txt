@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+python-dotenv
+motor
+pdfplumber
+python-docx
+ffmpeg-python
+groq
+pydantic
+python-multipart

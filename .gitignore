@@ -1,0 +1,46 @@
+# ------------------------------
+# OS / Editor
+# ------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ------------------------------
+# Root logs / temp
+# ------------------------------
+*.log
+*.tmp
+*.temp
+
+# ------------------------------
+# Python backend
+# ------------------------------
+backend/.env
+backend/.venv/
+backend/venv/
+backend/__pycache__/
+backend/**/*.pyc
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/htmlcov/
+
+# ------------------------------
+# Node frontend
+# ------------------------------
+frontend/.env
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/npm-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# ------------------------------
+# Build / cache
+# ------------------------------
+*.cache

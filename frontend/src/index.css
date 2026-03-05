@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply m-0 font-body text-slate-100;
+  background: radial-gradient(circle at 5% 5%, rgba(34, 211, 238, 0.18), transparent 28%),
+    radial-gradient(circle at 95% 10%, rgba(249, 115, 22, 0.12), transparent 22%),
+    linear-gradient(140deg, #020617 0%, #0b1325 45%, #142641 100%);
+  min-height: 100vh;
+}
+
+.glass-panel {
+  @apply rounded-2xl border border-cyan-200/20 bg-slate-900/50 backdrop-blur-md;
+}
+
+.grid-noise {
+  background-image: linear-gradient(rgba(100, 116, 139, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 116, 139, 0.1) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(circle at center, black 35%, transparent 100%);
+}
+
+.loader-orbit {
+  width: 3.6rem;
+  height: 3.6rem;
+  border-radius: 9999px;
+  border: 3px solid rgba(148, 163, 184, 0.25);
+  border-top-color: #22d3ee;
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
