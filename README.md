@@ -207,7 +207,7 @@ Start backend:
 
 ```bash
 cd backend
-uvicorn main:app --reload --port 8001
+python -m uvicorn main:app --reload --port 8001
 ```
 
 ### 2) Frontend Setup
@@ -258,4 +258,4 @@ git push -u origin main
 
 ## Credits
 
-Made with ❤️ by Tushar Chauhan, Bhoomi Chavda & Meet Parmar
+Made with ❤️ by Tushar Chauhan and Bhoomi Chavda

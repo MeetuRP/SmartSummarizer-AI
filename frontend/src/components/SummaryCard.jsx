@@ -1,16 +1,22 @@
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 function SummaryCard({ record }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(record.summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await navigator.clipboard.writeText(record.summary);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
   };
 
   const handleDownload = () => {
     const safeName = (record.file_name || "summary").replace(/\.[^.]+$/, "");
+
     const content = [
       `File Name: ${record.file_name}`,
       `File Type: ${record.file_type}`,
@@ -18,10 +24,14 @@ function SummaryCard({ record }) {
       "",
       "Summary",
       "=======",
+      "",
       record.summary,
     ].join("\n");
 
-    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([content], {
+      type: "text/plain;charset=utf-8",
+    });
+
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
@@ -42,6 +52,7 @@ function SummaryCard({ record }) {
         >
           {copied ? "Copied" : "Copy Summary"}
         </button>
+
         <button
           onClick={handleDownload}
           className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-300"
@@ -50,10 +61,10 @@ function SummaryCard({ record }) {
         </button>
       </div>
 
-      <div className="rounded-xl border border-cyan-200/20 bg-slate-950/60 p-4">
-        <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed text-slate-200">
-          {record.summary}
-        </pre>
+      <div className="rounded-xl border border-cyan-200/20 bg-slate-950/60 p-6">
+        <div className="prose prose-invert max-w-none prose-headings:text-cyan-100 prose-p:text-slate-200 prose-li:text-slate-200">
+          <ReactMarkdown>{record.summary}</ReactMarkdown>
+        </div>
       </div>
     </section>
   );

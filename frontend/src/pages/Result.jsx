@@ -65,7 +65,7 @@ function Result() {
   const createdAtText = useMemo(() => {
     if (!record?.created_at) return "";
     const date = new Date(record.created_at);
-    return date.toLocaleString();
+    return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
   }, [record]);
 
   if (loading) {
@@ -103,7 +103,7 @@ function Result() {
           <span className="font-medium text-slate-200">File:</span> {record.file_name}
         </p>
         <p className="text-sm text-slate-400">
-          {record.file_type?.toUpperCase()} {createdAtText ? `• ${createdAtText}` : ""}
+          {record.file_type?.toUpperCase()} {createdAtText ? `ï¿½ ${createdAtText}` : ""}
         </p>
       </section>
 
