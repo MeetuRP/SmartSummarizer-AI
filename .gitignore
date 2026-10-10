@@ -44,3 +44,18 @@ frontend/pnpm-debug.log*
 # Build / cache
 # ------------------------------
 *.cache
+
+# Local AI models, datasets, runtime artifacts, and project environments
+.venv/
+venv/
+.models/
+.tools/
+.cache/
+data/raw/
+data/processed/
+training/checkpoints/
+training/logs/
+artifacts/
+__pycache__/
+*.py[cod]
+.pytest_cache/

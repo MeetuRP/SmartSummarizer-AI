@@ -75,7 +75,7 @@ function Result() {
   if (error) {
     return (
       <div className="glass-panel p-6">
-        <p className="text-red-300">{error}</p>
+        <p role="alert" className="text-red-700">{error}</p>
       </div>
     );
   }
@@ -83,11 +83,11 @@ function Result() {
   if (!record) {
     return (
       <div className="glass-panel space-y-4 p-6">
-        <h2 className="font-display text-2xl font-semibold text-cyan-100">No summary loaded</h2>
-        <p className="text-slate-300">Upload a file first to generate a summary.</p>
+        <h2 className="font-display text-2xl font-semibold text-slate-900">No summary loaded</h2>
+        <p className="text-slate-600">Upload a file first to generate a summary.</p>
         <button
           onClick={() => navigate("/upload")}
-          className="rounded-lg bg-cyan-400 px-4 py-2 font-medium text-slate-950"
+          className="rounded-lg bg-teal-800 px-4 py-2 font-medium text-white"
         >
           Go to Upload
         </button>
@@ -98,12 +98,12 @@ function Result() {
   return (
     <div className="space-y-6">
       <section className="glass-panel p-6 md:p-8">
-        <h1 className="font-display text-3xl font-semibold text-cyan-100">Summary Result</h1>
-        <p className="mt-2 text-slate-300">
-          <span className="font-medium text-slate-200">File:</span> {record.file_name}
+        <h1 className="font-display text-3xl font-semibold text-slate-950">Summary result</h1>
+        <p className="mt-2 break-all text-slate-700">
+          <span className="font-medium text-slate-900">File:</span> {record.file_name}
         </p>
-        <p className="text-sm text-slate-400">
-          {record.file_type?.toUpperCase()} {createdAtText ? `• ${createdAtText}` : ""}
+        <p className="text-sm text-slate-500">
+          {record.file_type?.toUpperCase()} {createdAtText ? `â€¢ ${createdAtText}` : ""}
         </p>
       </section>
 

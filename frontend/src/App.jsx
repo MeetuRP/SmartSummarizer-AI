@@ -8,21 +8,17 @@ import Upload from "./pages/Upload";
 const links = [
   { to: "/", label: "Home" },
   { to: "/upload", label: "Upload" },
-  { to: "/result", label: "Result" },
   { to: "/history", label: "History" },
 ];
 
 function App() {
   return (
     <div className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 grid-noise" />
 
-      <header className="sticky top-0 z-20 border-b border-cyan-200/20 bg-slate-950/75 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="font-display text-lg font-semibold tracking-wide text-cyan-300">
-            SmartSummarizer AI
-          </div>
-          <nav className="flex flex-wrap gap-2">
+      <header className="sticky top-0 z-20 border-b border-stone-200 bg-[#fbfaf7]/90 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <NavLink to="/" className="font-display text-lg font-bold tracking-tight text-slate-900">SmartSummarizer <span className="text-teal-700">AI</span></NavLink>
+          <nav aria-label="Main navigation" className="flex flex-wrap gap-1">
             {links.map((link) => (
               <NavLink
                 key={link.to}
@@ -30,8 +26,8 @@ function App() {
                 className={({ isActive }) =>
                   `rounded-lg px-3 py-2 text-sm transition ${
                     isActive
-                      ? "bg-cyan-400/20 text-cyan-100"
-                      : "text-slate-300 hover:bg-cyan-400/10 hover:text-cyan-100"
+                    ? "bg-teal-100 text-teal-900"
+                      : "text-slate-600 hover:bg-stone-100 hover:text-slate-950"
                   }`
                 }
               >
@@ -42,7 +38,7 @@ function App() {
         </div>
       </header>
 
-      <main className="relative mx-auto w-full max-w-6xl px-6 py-10 animate-rise">
+      <main className="relative mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12 animate-rise">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/upload" element={<Upload />} />

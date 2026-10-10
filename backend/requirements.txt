@@ -4,7 +4,8 @@ python-dotenv
 motor
 pdfplumber
 python-docx
-ffmpeg-python
-groq
 pydantic
 python-multipart
+pillow
+faster-whisper
+PyMuPDF

@@ -1,0 +1,25 @@
+# Dataset and training decision record
+
+## Dataset discovery (2026-10-10)
+
+The repository contains no dataset, labelled examples, training scripts, or evaluation set. Dataset candidates were checked before deciding whether to fine-tune:
+
+| Candidate | Published task / size | License and fit | Decision |
+| --- | --- | --- | --- |
+| [BillSum](https://huggingface.co/datasets/FiscalNote/billsum) | Legislative text-to-summary; 23,455 rows; 67.26 MB download and 114 MB total files | Hugging Face metadata labels it CC0-1.0. The original repository's licensing section says “More Information Needed.” Source documentation describes U.S. federal and California legislative sources; California's archived portal declares covered legislative information public domain, but this does not independently clear every record/summary in the redistributed corpus. It is text-only and narrowly about legislation. | Best task fit among reviewed text datasets, but rights for the exact distributed records remain unresolved. Do not download/train until provenance and terms are confirmed and separately approved. |
+| [CNN/DailyMail](https://huggingface.co/datasets/abisee/cnn_dailymail) | News article and highlight pairs; repository reports about 2.51 GB | The card marks Apache-2.0, while its source material is CNN/Daily Mail journalism. It is English news, not general documents or images. | Do not download for this project: domain mismatch and source-content rights need review. |
+| [GEM/XSum](https://huggingface.co/datasets/GEM/xsum) | 226,711 BBC news article / one-sentence summary pairs; repository reports 38.4 kB (the dataset payload is separate) | Its card lists CC BY-SA 4.0, but also says the source is BBC articles, likely contains generic PII, has no consent policy, and is UK-news-only. This card-level license assertion does not resolve all source-content rights questions for this project's use. | Do not download/train: rights suitability remains unresolved and its single-sentence news task is a poor fit for office documents, images, and transcripts. |
+
+These are discovery candidates, not acquired or locally inspected data. Sizes and metadata are from the dataset cards. No candidate is a suitable, clearly licensed multimodal document understanding set for this application's mixture of PDFs, tables, charts, images, audio, and video.
+
+## Fine-tuning decision
+
+No fine-tuning was run. Ollama is an inference runtime; it is not a fine-tuning tool. The measured machine has 15.61 GiB total RAM, 4.91 GiB available at measurement time, Intel UHD graphics with 128 MB dedicated and about 7.99 GiB shared graphics memory, and no detected CUDA-capable GPU. D: had 80.6 GiB free at measurement time. A CPU adapter fine-tuning run for a 2B model is not responsibly estimable as reliable on this machine: available RAM is low, there is no accelerator, and a usable, rights-cleared training corpus is absent. No dataset was downloaded and no training artifacts were created. No training results or model-quality claims are made.
+
+Use the pretrained local model for inference after its D:-drive runtime/model setup is verified. For a meaningful future experiment, collect consented/licensed examples covering the target formats and tasks, split by source/document before training to prevent leakage, reserve validation and held-out test sets, record licenses and provenance, and evaluate both extraction fidelity and summary usefulness. Parameter-efficient tuning (for example, LoRA/QLoRA) would require a separate training stack and a feasibility decision; do not assume the current CPU and available RAM can complete it reliably.
+
+## Reproducible evaluation
+
+The deterministic unit suite under `backend/tests` uses synthetic examples and mocked model responses. It checks code paths and interface contracts; it does not measure model quality. `backend/evaluate_local_model.py` builds synthetic text, multi-chunk text, PDF, DOCX/table, image-text, chart, and scene cases and records model outputs, expected facts for manual review, and elapsed time to `artifacts/evaluation/latest.json`. It is intentionally an evaluation-only set and must never be used as a real-world training corpus. Keyword matching alone is not a factuality metric.
+
+On 2026-10-10, focused inference smoke checks passed for Qwen 3.5 2B Q4 text and image inputs and for faster-whisper tiny audio transcription. An MP4 audio-track upload also transcribed successfully. In the short-quote failure case, raw model output invented a speaker and historical context. A deterministic marker heuristic now detects that example and replaces the generated summary with a verbatim source excerpt; this regression behavior is covered by a mocked unit test. It does not prove general factuality, and semantic hallucinations without detectable markers remain possible. No fine-tuning or dataset download was performed. Browser interaction checks used headless Chrome/SwiftShader with mocked API responses, not real model inference through the browser.

@@ -1,261 +1,134 @@
-<div align="center">
-
 # SmartSummarizer AI
 
-### Multi-Format AI Document Summarization Platform
+Local-first document intelligence for summarizing text, PDFs, Word documents, images, audio, and video. Text and image inference use Ollama on the same computer; speech transcription uses faster-whisper locally. MongoDB stores summaries and history.
 
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vite.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Groq](https://img.shields.io/badge/Groq-AI-F55036?style=for-the-badge)](https://groq.com)
+## Supported inputs
 
-**Upload once. Summarize intelligently. Revisit anytime.**
+- PDF, DOCX, and TXT
+- PNG, JPG/JPEG, WEBP, BMP, and TIFF
+- MP3, WAV, and MP4 (video audio extraction uses PyAV)
 
-[Getting Started](#getting-started) | [Features](#features) | [Architecture](#architecture) | [Tech Stack](#tech-stack)
+Text PDFs use `pdfplumber`. Scanned pages and pages with embedded figures are rendered with PyMuPDF and analyzed with the configured vision model, subject to `MAX_DOCUMENT_PAGES` and `MAX_VISION_PAGES`. DOCX extraction includes paragraphs and tables. Image uploads are validated and normalized before local vision analysis. Audio and video are transcribed with faster-whisper on CPU.
 
-</div>
+## Local AI and privacy
 
----
+The backend calls only Ollama's local HTTP API at `http://127.0.0.1:11434` by default. Configuration rejects non-loopback Ollama endpoints. The project launcher sets `OLLAMA_NO_CLOUD=1`, disabling Ollama Cloud features. There is no hosted AI fallback or provider API key. Ollama must be running, and the configured model must be present. Speech model weights are fetched once by faster-whisper when first used; inference itself runs locally.
 
-## Repository Description
+Ollama's catalog lists `qwen3.5:2b-q4_K_M` at about 1.9 GB with text and image input. It is the initial local inference candidate; actual memory use and responsiveness still need to be measured on this machine. See the [Ollama model catalog](https://ollama.com/library/qwen3.5/tags).
 
-AI-powered full-stack app that ingests PDF, DOCX, TXT, MP3, WAV, and MP4 files, extracts/transcribes content, generates structured summaries using Groq, and stores searchable history in MongoDB.
+Model weights and project-specific downloads belong on D:. Ollama's Windows runtime supports a configurable `OLLAMA_MODELS` path; its own process must be restarted with that variable set before pulling models. The [Ollama FAQ](https://github.com/ollama/ollama/blob/main/docs/faq.mdx) documents model directory configuration. First-time setup requires internet to install packages and download model weights. After setup, AI inference does not need an internet connection.
 
----
+## Windows setup (D: workspace)
 
-## Features
+The project was inspected at `D:\SmartSummarizer AI`. Run commands below from the repository root.
 
-### Multi-format Input
-- Supports `PDF`, `DOCX`, `TXT`, `MP3`, `WAV`, `MP4`
-- Drag-and-drop upload with progress states
-- History retrieval with one-click summary reopen
+1. Keep the portable Ollama runtime under `.tools\ollama` on D:. Start it with the launcher so its model storage and temporary files stay on D:. The launcher refuses to start if another process already owns port 11434.
 
-### Intelligent Extraction and Transcription
-- `TXT`: direct decode
-- `PDF`: `pdfplumber`
-- `DOCX`: `python-docx`
-- `MP3/WAV`: Groq Whisper transcription
-- `MP4`: `ffmpeg` audio extraction, then Whisper transcription
+   ```powershell
+   powershell.exe -ExecutionPolicy Bypass -File .\scripts\Start-Local.ps1 -Mode Ollama
+   ```
 
-### Structured AI Summaries
-- Generates:
-  - Key Points
-  - Important Details
-  - Final Summary
-- Uses chunking with overlap for long documents
-- Merges per-chunk summaries into one final response
+2. Install project dependencies using D:-local caches. Use a D:-installed Python if available. The environment used for this implementation is `.venv` on D: based on the existing Python installation on C:; installed project packages and caches are on D:, but the base interpreter remains on C:.
 
-### Backend (Python)
-- Built with **Python + FastAPI + Uvicorn**
-- Async MongoDB operations using Motor
-- REST API endpoints for upload, history, and summary detail
+   ```powershell
+   powershell.exe -ExecutionPolicy Bypass -File .\scripts\Start-Local.ps1 -Mode Install
+   ```
 
----
+3. Copy `backend/.env.example` to `backend/.env` and adjust the local models/limits if needed. No AI API key is required.
+4. In a second PowerShell terminal, download the model only after confirming disk space and that the server started with `OLLAMA_MODELS` pointing to D::
 
-## Architecture
+   ```powershell
+   .\.tools\ollama\ollama.exe pull qwen3.5:2b-q4_K_M
+   ```
 
-```text
-SmartSummarizer AI/
-|-- backend/                        # Python FastAPI backend
-|   |-- main.py                     # App entrypoint, CORS, router mount
-|   |-- config.py                   # Environment settings
-|   |-- database.py                 # MongoDB async connection (Motor)
-|   |-- requirements.txt
-|   |-- .env.example
-|   |-- models/
-|   |   `-- summary_model.py
-|   |-- routers/
-|   |   `-- summary_router.py       # /upload, /history, /summary/{id}
-|   |-- services/
-|   |   |-- extraction_service.py   # File extraction + transcription
-|   |   |-- groq_service.py         # Groq chat + whisper clients
-|   |   `-- summarizer_service.py   # Chunking + summarization pipeline
-|   `-- utils/
-|       `-- chunking.py
-|
-|-- frontend/                       # React + Vite frontend
-|   |-- index.html
-|   |-- package.json
-|   |-- vite.config.js
-|   |-- tailwind.config.js
-|   |-- postcss.config.js
-|   `-- src/
-|       |-- main.jsx
-|       |-- App.jsx
-|       |-- index.css
-|       |-- api/
-|       |   `-- api.js
-|       |-- components/
-|       |   |-- UploadBox.jsx
-|       |   |-- SummaryCard.jsx
-|       |   `-- Loader.jsx
-|       `-- pages/
-|           |-- Home.jsx
-|           |-- Upload.jsx
-|           |-- Result.jsx
-|           `-- History.jsx
-|
-|-- .gitignore
-`-- README.md
-```
+5. Start local MongoDB, then start the backend and frontend in separate terminals:
 
-### Data Flow Diagram
+   ```powershell
+   powershell.exe -ExecutionPolicy Bypass -File .\scripts\Start-Local.ps1 -Mode Backend
+   ```
 
-```text
-+--------------+   Upload File   +------------------+   Store/Query   +--------------+
-|   Frontend   | --------------> | FastAPI Backend  | --------------> |   MongoDB    |
-| (React/Vite) | <-------------- |   (Python)       | <-------------- |   (Motor)    |
-+--------------+  JSON Response  +--------+---------+   History Data  +--------------+
-                                       |
-                                       v
-                            +------------------------+
-                            | Extraction Pipeline    |
-                            | - TXT direct read      |
-                            | - PDF: pdfplumber      |
-                            | - DOCX: python-docx    |
-                            | - MP3/WAV: Whisper     |
-                            | - MP4: ffmpeg+Whisper  |
-                            +-----------+------------+
-                                        |
-                                        v
-                            +------------------------+
-                            | Groq Summarization     |
-                            | - Chunking             |
-                            | - Per-chunk summary    |
-                            | - Final merged output  |
-                            +------------------------+
-```
+   ```powershell
+   powershell.exe -ExecutionPolicy Bypass -File .\scripts\Start-Local.ps1 -Mode Frontend
+   ```
 
-### Summarization Pipeline
+The default MongoDB URI is local at `mongodb://127.0.0.1:27017`; the database remains `smart_summarizer` and the collection remains `summaries`.
 
-```text
-[Upload] -> [Type Detection] -> [Extract/Transcribe] -> [Chunk Large Text]
-        -> [Groq Summarize Chunks] -> [Combine Summaries] -> [Save in MongoDB]
-        -> [Return Structured Summary to UI]
-```
+## Configuration
 
----
+`backend/.env.example` documents all settings. The main options are `LOCAL_AI_PROVIDER`, `OLLAMA_BASE_URL`, `LOCAL_TEXT_MODEL`, `LOCAL_VISION_MODEL`, `LOCAL_MODEL_TIMEOUT`, `LOCAL_MODEL_CONTEXT`, `FAST_WHISPER_MODEL`, `MONGODB_URI`, `DATABASE_NAME`, `MAX_CHUNK_CHARS`, `CHUNK_OVERLAP`, `MAX_UPLOAD_MB`, `MAX_DOCUMENT_PAGES`, `MAX_VISION_PAGES`, and `MAX_IMAGE_PIXELS`. Only the `ollama` provider and loopback URLs are accepted; the frontend also rejects non-loopback `VITE_API_URL` values. The default Whisper model is `tiny` to keep first-run storage low; the default context is 8,192 tokens to limit memory use, and long files are processed in chunks.
 
-## Tech Stack
+## API
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| Frontend | React, Vite, Axios, React Router | SPA and API integration |
-| Styling | TailwindCSS | Modern SaaS-like UI |
-| Backend | Python, FastAPI, Uvicorn | Async REST API |
-| Database | MongoDB, Motor | Summary persistence and history |
-| AI Provider | Groq Chat + Groq Whisper | Summarization and transcription |
-| Media | ffmpeg-python + system `ffmpeg` | MP4 audio extraction |
+- `POST /upload` — extract/transcribe, summarize, store, and return a record.
+- `GET /history` — recent records without full extracted text.
+- `GET /summary/{id}` — retrieve a saved record.
+- `GET /health` — backend status.
+- `GET /health/ai` — model names, availability, and Ollama connection status.
 
----
+The summary record fields `id`, `file_name`, `file_type`, `extracted_text`, `summary`, and `created_at` remain compatible with existing history documents.
 
-## API Endpoints
+## Tests and genuine inference check
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/upload` | Upload file and generate summary |
-| `GET` | `/history` | Get recent summaries |
-| `GET` | `/summary/{id}` | Get a summary by id |
-
-Example:
-
-```bash
-curl -X POST "http://127.0.0.1:8001/upload" \
-  -H "accept: application/json" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@sample.pdf"
-```
-
----
-
-## Getting Started
-
-### Prerequisites
-
-| Requirement | Version |
-|---|---|
-| Python | 3.10+ |
-| Node.js | 18+ |
-| MongoDB | 6+ |
-| ffmpeg | Latest stable |
-
-### 1) Backend Setup (Python)
-
-```bash
-cd backend
-pip install -r requirements.txt
-```
-
-Create `backend/.env` (copy from `.env.example`) and set real values:
-
-```env
-GROQ_API_KEY=
-MONGODB_URI=mongodb://localhost:27017
-DATABASE_NAME=smart_summarizer
-
-GROQ_MODEL=llama-3.3-70b-versatile
-WHISPER_MODEL=whisper-large-v3
-MAX_CHUNK_CHARS=6000
-CHUNK_OVERLAP=500
-MAX_HISTORY_ITEMS=50
-```
-
-Start backend:
-
-```bash
-cd backend
-uvicorn main:app --reload --port 8001
-```
-
-### 2) Frontend Setup
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Optional `frontend/.env`:
-
-```env
-VITE_API_URL=http://127.0.0.1:8001
-```
-
----
-
-## Troubleshooting
-
-| Issue | Cause | Fix |
-|---|---|---|
-| Network Error on upload | Wrong backend URL/port | Point frontend API to `8001` |
-| `GROQ_API_KEY is missing` | Key not set in `backend/.env` | Add key and restart backend |
-| `Invalid summary id` | Stale history payload | Refresh page and open latest record |
-| MP4 upload 500 | Missing FFmpeg in PATH | Install FFmpeg and restart terminal |
-
-Install FFmpeg on Windows:
+Run deterministic backend tests (mocked inference; no model download required):
 
 ```powershell
-winget install --id Gyan.FFmpeg --source winget
-ffmpeg -version
+cd backend
+..\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
 
----
+Run the production frontend build:
 
-## Git Setup
-
-```bash
-git init -b main
-git add .
-git commit -m "feat: initial SmartSummarizer AI release"
-git remote add origin https://github.com/MeetuRP/SmartSummarizer-AI.git
-git push -u origin main
+```powershell
+cd frontend
+npm run build
 ```
 
----
+The frontend uses Vite 6, React Router 7, and Tailwind CSS 4. Use Node.js 20 or 22+; Tailwind CSS 4 targets Chrome 111+, Safari 16.4+, and Firefox 128+.
+
+Check configured Ollama models and run real text inference; optionally include an image:
+
+```powershell
+..\.venv\Scripts\python.exe backend\verify_local_model.py
+..\.venv\Scripts\python.exe backend\verify_local_model.py --image path\to\image.png
+```
+
+Run the synthetic, real-inference evaluation cases (text, long text, PDF, DOCX/table, image text, chart, and scene). The report is written to the ignored D:-drive `artifacts/evaluation/latest.json` and requires manual fact review:
+
+```powershell
+..\.venv\Scripts\python.exe backend\evaluate_local_model.py
+```
+
+For Ollama troubleshooting, confirm `ollama list`, `http://127.0.0.1:11434`, the model tag, and the process's actual D:-drive model directory. Faster-whisper downloads the configured speech model into `.models`; PyAV extracts and resamples MP4 audio locally. A small quantized model may be slower or less capable on CPU than a larger model on suitable hardware.
+
+Focused real-inference checks on 2026-10-10 passed for a text summary, a synthetic image, a spoken-audio fixture, and an MP4 audio track. They are smoke checks, not a broad quality evaluation. Qwen produced an unsupported speaker and historical attribution for a short quotation; a deterministic marker check now rejects that output and falls back to source text. The check is heuristic and cannot detect every unsupported claim. The video path transcribes its audio track and does not analyze visual frames. Headless Chrome interaction checks were completed using software rendering.
+
+## Evaluation and training status
+
+No training corpus was downloaded or used. BillSum has unresolved rights for the redistributed records. XSum's dataset card lists CC BY-SA 4.0, but it contains BBC news text, likely PII, has no consent policy, and targets one-sentence news abstracts rather than this app's document, image, and transcript workloads. No candidate was approved for training. See [training/README.md](training/README.md). Backend unit tests use synthetic inputs and mocks; separate smoke checks used real local inference. Neither is a broad quality evaluation.
+
+No fine-tuning was performed. Ollama is used for pretrained local inference, not training. A future training experiment needs appropriately licensed/consented examples, non-leaking train/validation/test splits, a separate training stack, and hardware assessment.
+
+## Known limitations
+
+- Ollama and MongoDB are external local prerequisites. PyAV handles MP4 audio extraction without a separate FFmpeg installation.
+- Summaries can contain unsupported claims. A heuristic rejects some unsupported names, numbers, dates, quotes, and context markers, but it is not semantic fact verification. Verify claims against the uploaded source.
+- Video uploads are summarized from their audio track; visual frames are not analyzed.
+- Browser checks used installed headless Chrome with SwiftShader and mocked API responses. Upload preview, result display, copy/download, history, error display, navigation, and 390/768/1440 px layouts were checked; this does not verify every backend/browser combination.
+- At this review, `npm audit` and `npm audit --omit=dev` report zero known vulnerabilities. Recheck before release because advisories change over time.
+- Real local text/image/audio/video inference and MongoDB persistence passed focused smoke checks; they do not establish bug-free operation.
+- Image/chart interpretation depends on the selected vision model; check its numerical claims against the source.
+- Scanned PDF visual analysis requires PyMuPDF and a configured vision model and is capped by the page limit.
+- Windows itself, VS Code/Codex, and the preinstalled base Python may write system-managed files to C:. Project dependencies, npm packages, caches, generated files, and temporary processing data are configured for D:.
+
+## Project structure
+
+```text
+backend/       FastAPI API, extraction, local model adapters, and tests
+frontend/      React/Vite application
+scripts/       D:-scoped cache and environment setup
+training/      Dataset discovery and training decision record
+```
 
 ## Credits
 
-Made with ❤️ by Tushar Chauhan, Bhoomi Chavda & Meet Parmar
+Made with ❤️ by Meet Parmar

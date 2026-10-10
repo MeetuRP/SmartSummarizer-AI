@@ -1,3 +1,5 @@
+import logging
+
 from bson import ObjectId
 from bson.errors import InvalidId
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
@@ -5,9 +7,11 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from config import get_settings
 from database import get_summary_collection
 from models.summary_model import SummaryHistoryItem, SummaryRecord
+from services.local_ai_service import LocalAIUnavailableError
 from services.summarizer_service import process_uploaded_file
 
 router = APIRouter(tags=["summaries"])
+logger = logging.getLogger("uvicorn.error")
 
 
 def _serialize_mongo_doc(document: dict) -> dict:
@@ -17,10 +21,13 @@ def _serialize_mongo_doc(document: dict) -> dict:
 
 @router.post("/upload", response_model=SummaryRecord, status_code=status.HTTP_201_CREATED)
 async def upload_and_summarize(file: UploadFile = File(...)):
+    logger.info("Upload API request started.")
     try:
         return await process_uploaded_file(file)
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+    except LocalAIUnavailableError as exc:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(exc)) from exc
     except RuntimeError as exc:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(exc)) from exc
 

@@ -38,20 +38,20 @@ function SummaryCard({ record }) {
       <div className="mb-4 flex flex-wrap gap-3">
         <button
           onClick={handleCopy}
-          className="rounded-lg border border-cyan-300/40 px-4 py-2 text-sm font-medium text-cyan-100 transition hover:bg-cyan-400/10"
+          className="rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-stone-50"
         >
           {copied ? "Copied" : "Copy Summary"}
         </button>
         <button
           onClick={handleDownload}
-          className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-300"
+          className="rounded-lg bg-teal-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-900"
         >
           Download Summary
         </button>
       </div>
 
-      <div className="rounded-xl border border-cyan-200/20 bg-slate-950/60 p-4">
-        <pre className="whitespace-pre-wrap font-body text-sm leading-relaxed text-slate-200">
+      <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+        <pre className="whitespace-pre-wrap break-words font-body text-sm leading-relaxed text-slate-700">
           {record.summary}
         </pre>
       </div>

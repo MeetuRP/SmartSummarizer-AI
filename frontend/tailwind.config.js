@@ -4,8 +4,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        display: ["Sora", "Space Grotesk", "Segoe UI", "sans-serif"],
-        body: ["Space Grotesk", "Segoe UI", "sans-serif"],
+        display: ["Segoe UI", "Inter", "sans-serif"],
+        body: ["Segoe UI", "Inter", "sans-serif"],
       },
       colors: {
         brand: {

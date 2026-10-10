@@ -62,16 +62,16 @@ function History() {
   return (
     <div className="space-y-6">
       <section className="glass-panel p-6 md:p-8">
-        <h1 className="font-display text-3xl font-semibold text-cyan-100">Summary History</h1>
-        <p className="mt-2 text-slate-300">Browse previous generated summaries.</p>
+        <h1 className="font-display text-3xl font-semibold text-slate-950">Summary history</h1>
+        <p className="mt-2 text-slate-600">Browse previous summaries saved on this computer.</p>
       </section>
 
       {error && (
-        <section className="glass-panel border-red-300/40 p-4 text-red-300">{error}</section>
+        <section role="alert" className="glass-panel border-red-300/40 p-4 text-red-700">{error}</section>
       )}
 
       {items.length === 0 ? (
-        <section className="glass-panel p-6 text-slate-300">No summaries found yet.</section>
+        <section className="glass-panel p-6 text-slate-600">No summaries found yet.</section>
       ) : (
         <section className="grid gap-4">
           {items.map((item) => {
@@ -81,18 +81,18 @@ function History() {
               <article key={itemId || `${item.file_name}-${item.created_at}`} className="glass-panel p-5">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="space-y-2">
-                    <h2 className="font-display text-lg font-semibold text-cyan-100">{item.file_name}</h2>
-                    <p className="text-sm text-slate-400">
+                    <h2 className="break-all font-display text-lg font-semibold text-slate-900">{item.file_name}</h2>
+                    <p className="text-sm text-slate-500">
                       {item.file_type?.toUpperCase()} - {new Date(item.created_at).toLocaleString()}
                     </p>
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm text-slate-600">
                       {item.summary.length > 180 ? `${item.summary.slice(0, 180)}...` : item.summary}
                     </p>
                   </div>
 
                   <button
                     onClick={() => handleOpen(itemId)}
-                    className="rounded-lg bg-cyan-400 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-cyan-300"
+                    className="rounded-lg bg-teal-800 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-900"
                   >
                     Open Summary
                   </button>
