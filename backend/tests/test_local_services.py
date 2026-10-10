@@ -2,7 +2,8 @@ import io
 import unittest
 import urllib.error
 import wave
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 
 import av
 import numpy as np
@@ -14,7 +15,7 @@ from fastapi import HTTPException, UploadFile
 from services.extraction_service import validate_image, extract_text_from_file
 from services.extraction_service import _extract_video_audio_bytes
 from services import local_ai_service
-from services.summarizer_service import generate_structured_summary
+from services.summarizer_service import generate_structured_summary, process_uploaded_file
 from routers.summary_router import upload_and_summarize
 from utils.chunking import chunk_text
 
@@ -186,6 +187,29 @@ class LocalAIRequestTests(unittest.TestCase):
         self.assertNotIn("John F. Kennedy", result)
         self.assertNotIn("1943", result)
         self.assertNotIn("wartime", result)
+
+    def test_upload_processing_logs_visible_stages(self):
+        collection = SimpleNamespace(
+            insert_one=AsyncMock(return_value=SimpleNamespace(inserted_id="summary-id"))
+        )
+
+        async def run_upload():
+            with (
+                patch("services.summarizer_service.extract_text_from_file", return_value=("txt", "Source text.", None)),
+                patch("services.summarizer_service.generate_structured_summary", return_value="Summary text."),
+                patch("services.summarizer_service.get_summary_collection", return_value=collection),
+            ):
+                return await process_uploaded_file(UploadFile(file=io.BytesIO(b"source"), filename="note.txt"))
+
+        with self.assertLogs("uvicorn.error", level="INFO") as captured:
+            import asyncio
+            result = asyncio.run(run_upload())
+
+        self.assertEqual(result["_id"], "summary-id")
+        self.assertTrue(any("Upload received" in message for message in captured.output))
+        self.assertTrue(any("Content extraction finished" in message for message in captured.output))
+        self.assertTrue(any("Local summarization finished" in message for message in captured.output))
+        self.assertTrue(any("Upload processing completed" in message for message in captured.output))
 
     @patch(
         "services.summarizer_service.generate",
